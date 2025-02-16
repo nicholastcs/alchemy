@@ -1,0 +1,105 @@
+# yaml-language-server: $schema=../schemas/main.json
+apiVersion: alchemy.io/v1alpha
+kind: CodeTemplate
+metadata:
+  name: k8s-deployment
+  namespace: k8s.io
+spec:
+  kind: go-template
+  options:
+    - missingkey=error
+    - funcs=sprig
+  generateFiles:
+    - file: k8s/pdb.yaml
+      template: |
+        {{- if .protect_app -}}
+        apiVersion: policy/v1
+        kind: PodDisruptionBudget
+        metadata:
+          name: "{{.name}}"
+          namespace: "{{.namespace}}"
+        spec:
+          maxUnavailable: 1
+          selector:
+            matchLabels:
+              app: "{{.name}}"
+        {{- end -}}
+    - file: k8s/hpa.yaml
+      template: |
+        {{- if ne .minimum_replicas .maximum_replicas -}}
+        apiVersion: autoscaling/v2
+        kind: HorizontalPodAutoscaler
+        metadata:
+          name: "{{.name}}"
+          namespace: "{{.namespace}}"
+        spec:
+          scaleTargetRef:
+            apiVersion: apps/v1
+            kind: Deployment
+            name: "{{.name}}"
+          minReplicas: {{.minimum_replicas}}
+          maxReplicas: {{.maximum_replicas}}
+          metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 50
+        {{- end -}}
+    - file: k8s/deployment.yaml
+      template: |
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          labels:
+            app: "{{.name}}"
+          name: "{{.name}}"
+          namespace: "{{.namespace}}"
+        spec:
+        {{- if eq .minimum_replicas .maximum_replicas }}
+          replicas: {{.minimum_replicas}}
+        {{- end }}
+          selector:
+            matchLabels:
+              app: "{{.name}}"
+          strategy: 
+            type: RollingUpdate
+            rollingUpdate:
+              maxSurge: 3
+              maxUnavailable: 1
+          template:
+            metadata:
+              labels:
+                app: "{{.name}}"
+            spec:
+              containers:
+              - image: "{{.image_name}}"
+                name: "{{.name}}"
+                ports:
+                  - containerPort: {{.port}}
+                # TODO: your application environment variable here
+                # env: 
+                #   - name: dasdasd
+                #     value: wasdasd
+                resources: 
+                  limits:
+                    cpu: "{{.cpu_cores}}"
+                    memory: "{{.memory}}"
+                  resources:
+                    cpu: "{{.cpu_cores}}"
+                    memory: "{{.memory}}"
+                readinessProbe:
+                  initialDelaySeconds: 5
+                  periodSeconds: 5
+                  timeoutSeconds: 3
+                  httpGet:
+                    path: "/{{.probe_endpoint}}"
+                    port: {{.port}}
+                livenessProbe:
+                  initialDelaySeconds: 5
+                  periodSeconds: 10
+                  timeoutSeconds: 5
+                  httpGet:
+                    path: "/{{.probe_endpoint}}"
+                    port: {{.port}}

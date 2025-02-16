@@ -1,0 +1,65 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "CodeTemplateSpec",
+    "type": "object",
+    "properties": {
+        "kind": {
+            "title": "Templating Kind",
+            "type": "string",
+            "description": "Templating kind, supported only for go-template"
+        },
+        "options": {
+            "title": "Templating Kind's Options",
+            "type": "array",
+            "description": "Templating Options by defined kind",
+            "uniqueItems": true
+        },
+        "generateFiles": {
+            "title": "List of Generate File pairs",
+            "description": "File name & template pairs",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "title": "Generate File pairs",
+                "properties": {
+                    "file": {
+                        "title": "File name",
+                        "type": "string",
+                        "description": "File name relative to current directory"
+                    },
+                    "template": {
+                        "title": "Template Literal",
+                        "type": "string",
+                        "description": "Template literal"
+                    }
+                },
+                "additionalProperties": false,
+                "required": ["file", "template"]
+            },
+            "minItems": 1
+        }
+    },
+    "additionalProperties": false,
+    "oneOf": [
+        {
+            "$comment": "Go Template allowed schema",
+            "properties": {
+                "kind": {
+                    "const": "go-template"
+                },
+                "options": {
+                    "items": {
+                        "enum": [
+                            "funcs=sprig",
+                            "missingkey=error"
+                        ]
+                    }
+                }
+            }
+        }
+    ],
+    "required": [
+        "kind",
+        "generateFiles"
+    ]
+}

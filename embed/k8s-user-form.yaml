@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=../schemas/main.json
+apiVersion: alchemy.io/v1alpha
+kind: Form
+metadata:
+  name: app
+  namespace: k8s.io
+spec:
+  confirmationRequired: true
+  fields:
+    - name: minimum_replicas
+      title: Minimum Replicas
+      description: Minimum Replicas for the application
+      inputType: numerical
+      constraint:
+        cel:
+          expressions:
+            - value: this > 0
+              message: minimum replicas must be greater than 0
+
+    - name: maximum_replicas
+      title: Maximum Replicas
+      description: |-
+        Maximum Replicas for the application. 
+        If its value is equal to Minimum Replicas, then no scaling in place.
+      inputType: numerical
+      constraint:
+        cel:
+          expressions:
+            - value: this > 0
+              message: maximum replicas must be greater than 0
+            - value: this >= result.minimum_replicas
+              message: maximum replicas must be greater or equal to than minimum replicas
+
+    - name: protect_app
+      title: Protect Application from Voluntary Disruption
+      description: Protect Application from Voluntary Disruption
+      inputType: boolean
+      constraint:
+        cel:
+          expressions:
+            - value: "!(this && result.maximum_replicas == 1)"
+              message: maximum replicas must be greater than 1 if this is true
+
+    - name: name
+      title: Name
+      description: Name of service
+      inputType: text
+      constraint:
+        cel:
+          expressions:
+            - message: length of name must be greater than 0.
+              value: this.size() > 0
+
+    - name: namespace
+      title: Namespace
+      description: Namespace of service
+      inputType: single-select-text
+      choices:
+        - default
+        - mktg
+
+    - name: port
+      title: Port number
+      description: Port number
+      choices: [8443, 8080]
+      inputType: single-select-numerical
+
+    - name: cpu_cores
+      title: CPU cores
+      description: CPU cores
+      inputType: text
+      constraint:
+        cel:
+          expressions:
+            - message: cpu_cores must be greater or equal than 2000m
+              value: quantity(this) >= quantity("2000m")
+
+    - name: memory
+      title: Memory
+      description: |-
+        For the format of the value please refer:
+        https://github.com/kubernetes/apimachinery/blob/master/pkg/api/resource/quantity.go
+        eg: 1024Mi, 1Gi, 512Mi
+      inputType: text
+      constraint:
+        cel:
+          expressions:
+            - message: memory must be between 512Mi and 1024Mi (inclusive)
+              value: quantity(this) <= quantity("2Gi") && quantity(this) >= quantity("512Mi")
+
+    - name: image_name
+      title: Image Name
+      description: Container image name
+      inputType: text
+      constraint:
+        cel:
+          expressions:
+            - message: length of image name must be greater than 0.
+              value: this.size() > 0
+            - message: image name must not be end with :latest
+              value: "!this.endsWith(':latest')"
+
+    - name: probe_endpoint
+      title: Probe endpoint
+      description: Probe endpoint
+      inputType: single-select-text
+      choices: 
+        - "healthz"
+        - "health"
+        - "readyz"

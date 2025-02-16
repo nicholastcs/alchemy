@@ -1,0 +1,108 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Main",
+    "description": "A schema for Configurations in Alchemy",
+    "type": "object",
+    "properties": {
+        "apiVersion": {
+            "title": "API Version",
+            "type": "string",
+            "description": "API version of the manifest",
+            "const": "alchemy.io/v1alpha"
+        },
+        "kind": {
+            "title": "Kind",
+            "type": "string",
+            "description": "Kind of the manifest"
+        },
+        "metadata": {
+            "title": "Metadata",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "title": "Name",
+                    "type": "string",
+                    "description": "Name of the manifest"
+                },
+                "namespace": {
+                    "title": "Namespace",
+                    "type": "string",
+                    "description": "Namespace of the manifest"
+                },
+                "annotations": {
+                    "title": "Annotations",
+                    "type": "object",
+                    "description": "Annotation of the manifest"
+                }
+            },
+            "additionalProperties": false
+        },
+        "status": {
+            "title": "Status",
+            "description": "Status of the manifest",
+            "type": "object",
+            "properties": {
+                "conditions": {
+                    "type": "array",
+                    "title": "Conditions",
+                    "items": {
+                        "properties": {
+                            "type": {
+                                "title": "Condition's Type",
+                                "type": "string",
+                                "description": "Type of the condition"
+                            },
+                            "status": {
+                                "title": "Condition's Status",
+                                "type": "boolean",
+                                "description": "Status of the condition"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "status"
+                        ]
+                    },
+                    "additionalProperties": true
+                }
+            }
+        }
+    },
+    "$comment": "Available API are shown here",
+    "oneOf": [
+        {
+            "properties": {
+                "kind": {
+                    "const": "CodeTemplate"
+                },
+                "apiVersion": {
+                    "const": "alchemy.io/v1alpha"
+                },
+                "spec": {
+                    "title": "Code Template Specification V1 alpha",
+                    "$ref": "v1alpha/code_template.json"
+                }
+            }
+        },
+        {
+            "properties": {
+                "kind": {
+                    "const": "Form"
+                },
+                "apiVersion": {
+                    "const": "alchemy.io/v1alpha"
+                },
+                "spec": {
+                    "title": "User Form Specification V1 alpha",
+                    "$ref": "v1alpha/form.json"
+                }
+            }
+        }
+    ],
+    "required": [
+        "apiVersion",
+        "metadata",
+        "kind",
+        "spec"
+    ]
+}

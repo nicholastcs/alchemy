@@ -1,0 +1,17 @@
+version: '3'
+
+tasks:
+  remove-log:
+    desc: discard .log files
+    cmd: "rm -rf ./**/*.log"
+
+  test:
+    desc: test all _test files
+    cmds: 
+      - go test -v ./...
+      - task: remove-log
+
+  install:
+    desc: install CLI
+    cmds:
+      - go install .

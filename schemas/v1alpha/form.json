@@ -1,0 +1,200 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "FormSpec",
+    "type": "object",
+    "properties": {
+        "confirmationRequired": {
+            "title": "Confirmation Required",
+            "type": "boolean",
+            "description": "If true, user confirmation is required"
+        },
+        "fields": {
+            "title": "Form list",
+            "description": "Form list",
+            "type": "array",
+            "items": {
+                "title": "Form declarations",
+                "description": "Field object that consists of title, description, inputType and it's constraints\n",
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "title",
+                    "description",
+                    "inputType"
+                ],
+                "properties": {
+                    "name": true,
+                    "title": true,
+                    "description": true,
+                    "inputType": true,
+                    "constraint": true,
+                    "choices": true
+                },
+                "allOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "title": "Name of the field",
+                                "description": "Name of the field"
+                            },
+                            "title": {
+                                "title": "Title of the field",
+                                "description": "Title of the field, which it will display on the UI"
+                            },
+                            "description": {
+                                "title": "Description of the field",
+                                "description": "Description of the field, which it will display on the UI"
+                            },
+                            "inputType": {
+                                "title": "Type of the field",
+                                "description": "Type of the field"
+                            },
+                            "constraint": {
+                                "title": "Constraint",
+                                "description": "Constraint of the field's value",
+                                "type": "object",
+                                "additionalProperties": false,
+                                "minProperties": 1,
+                                "properties": {
+                                    "cel": {
+                                        "name": "CEL constraint",
+                                        "description": "CEL constraint object",
+                                        "type": "object",
+                                        "additionalProperties": false,
+                                        "properties": {
+                                            "expressions": {
+                                                "type":"array",
+                                                "description": "List for the CEL expression and error message pair",
+                                                "minItems": 1,
+                                                "items": {
+                                                    "properties": {
+                                                        "message": {
+                                                            "type": "string",
+                                                            "title": "Message",
+                                                            "description": "Message to be emitted when the CEL expression returns false"
+                                                        },
+                                                        "value": {
+                                                            "type": "string",
+                                                            "title": "CEL expression value",
+                                                            "description": "CEL expression, return type must be boolean. If false, returns error"
+                                                        }
+                                                    },
+                                                    "title": "CEL expression pair",
+                                                    "description": "CEL expression and error message pair",
+                                                    "additionalProperties": false,
+                                                    "required": ["message", "value"]
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "oneOf": [
+                    {
+                        "properties": {
+                            "inputType": {
+                                "const": "text"
+                            },
+                            "choices": false
+                        }
+                        
+                    },
+                    {
+                        "properties": {
+                            "inputType": {
+                                "const": "numerical"
+                            },
+                            "choices": false
+                        }
+                        
+                    },
+                    {
+                        "properties": {
+                            "inputType": {
+                                "const": "multiline-text"
+                            },
+                            "choices": false
+                        }
+                    },
+                    {
+                        "properties": {
+                            "inputType": {
+                                "const": "single-select-numerical"
+                            },
+                            "choices": {
+                                "title": "Numerical Based Choices",
+                                "description": "Numerical based choices of the field",
+                                "minItems": 2,
+                                "items": {
+                                    "type": "number"
+                                }
+                            }
+                        },
+                        "required": ["choices"]
+                    },
+                    {
+                        "properties": {
+                            "inputType": {
+                                "const": "multi-select-numerical"
+                            },
+                            "choices": {
+                                "title": "Numerical Based Choices",
+                                "description": "Numerical based choices of the field",
+                                "minItems": 2,
+                                "items": {
+                                    "type": "number"
+                                }
+                            }
+                        },
+                        "required": ["choices"]
+                    },
+                    {
+                        "properties": {
+                            "inputType": {
+                                "const": "single-select-text"
+                            },
+                            "choices": {
+                                "title": "String Based Choices",
+                                "description": "String based choices of the field",
+                                "minItems": 2,
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["choices"]
+                    },
+                    {
+                        "properties": {
+                            "inputType": {
+                                "const": "multi-select-text"
+                            },
+                            "choices": {
+                                "title": "String Based Choices",
+                                "description": "String based choices of the field",
+                                "minItems": 2,
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "required": ["choices"]
+                    },
+                    {
+                        "properties": {
+                            "inputType": {
+                                "const": "boolean"
+                            },
+                            "choices": false
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "additionalProperties": false
+}
